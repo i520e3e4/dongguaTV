@@ -239,4 +239,19 @@ app.post('/admin/sites', async (c) => {
     return c.json({ success: true });
 });
 
+// === 强制重置为默认源 (用于配置更新后刷新 KV) ===
+app.get('/admin/reset_defaults', async (c) => {
+    // 简单验证密码
+    const pwd = c.req.query('pwd');
+    if (pwd !== ADMIN_PASSWORD) return c.text("Unauthorized: Password required (?pwd=admin)", 403);
+
+    await saveDB(c.env, { sites: DEFAULT_SITES });
+    return c.json({
+        success: true,
+        message: "已重置为代码中的最新默认源",
+        count: DEFAULT_SITES.length,
+        sites: DEFAULT_SITES
+    });
+});
+
 export const onRequest = handle(app);
