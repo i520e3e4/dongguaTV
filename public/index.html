@@ -284,8 +284,8 @@
 
     <script>
         const { createApp, reactive } = Vue;
-        // 使用你的反代域名
-        const MY_PROXY = "https://proxy.686423.xyz";
+        // 使用自带的 API 代理 (自动转发到 TMDB)
+        const MY_PROXY = `${window.location.origin}/api/tmdb`;
         const TMDB_API_KEY = "3056754f5a50bf5171f9d411e3029fb3";
 
         // API地址修改为你的反代
