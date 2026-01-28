@@ -440,7 +440,7 @@
                     showDetail: false, currentGroup: null, currentSource: null,
                     episodeList: [], currentUrl: '', loadingDetail: false,
                     imageMap: {}, fallbackMap: {}, heroList: [], scrollY: 0,
-                    hotList: []
+                    hotList: [], hasErrorAlerted: false
                 }
             },
             mounted() {
@@ -483,16 +483,30 @@
                 },
 
                 fetchAllLists() {
+                    const errorHandler = (err) => {
+                        console.error("TMDB Request Failed:", err);
+                        // 只报错一次，避免弹窗炸裂
+                        if (!this.hasErrorAlerted) {
+                            alert("无法连接到影视数据源！\n可能是代理地址不可用，或 API Key 错误。\n请按 F12 查看控制台详细报错。");
+                            this.hasErrorAlerted = true;
+                        }
+                    };
+
                     fetch(`${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=zh-CN`)
-                        .then(res => res.json()).then(data => { if (data.results) this.movieList = data.results; });
+                        .then(res => res.json()).then(data => { if (data.results) this.movieList = data.results; })
+                        .catch(errorHandler);
                     fetch(`${TMDB_BASE_URL}/trending/tv/week?api_key=${TMDB_API_KEY}&language=zh-CN`)
-                        .then(res => res.json()).then(data => { if (data.results) this.tvList = data.results; });
+                        .then(res => res.json()).then(data => { if (data.results) this.tvList = data.results; })
+                        .catch(errorHandler);
                     fetch(`${TMDB_BASE_URL}/discover/tv?with_origin_country=CN&sort_by=popularity.desc&api_key=${TMDB_API_KEY}&language=zh-CN`)
-                        .then(res => res.json()).then(data => { if (data.results) this.list_cn = data.results; });
+                        .then(res => res.json()).then(data => { if (data.results) this.list_cn = data.results; })
+                        .catch(errorHandler);
                     fetch(`${TMDB_BASE_URL}/discover/tv?with_origin_country=KR|JP&sort_by=popularity.desc&api_key=${TMDB_API_KEY}&language=zh-CN`)
-                        .then(res => res.json()).then(data => { if (data.results) this.list_krjp = data.results; });
+                        .then(res => res.json()).then(data => { if (data.results) this.list_krjp = data.results; })
+                        .catch(errorHandler);
                     fetch(`${TMDB_BASE_URL}/discover/movie?with_origin_country=HK|TW&sort_by=popularity.desc&api_key=${TMDB_API_KEY}&language=zh-CN`)
-                        .then(res => res.json()).then(data => { if (data.results) this.list_hktw = data.results; });
+                        .then(res => res.json()).then(data => { if (data.results) this.list_hktw = data.results; })
+                        .catch(errorHandler);
                 },
 
                 fetchHero() {
