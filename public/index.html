@@ -97,7 +97,7 @@
                 <div class="hot-row" data-section="movie">
                     <div class="hot-card" v-for="item in movieList" :key="item.id" @click="autoSearch(item.title)">
                         <div class="poster-wrap">
-                            <img :src="'https://daili.smdhb.com/t/p/w300' + item.poster_path" loading="lazy">
+                            <img :src="getPosterUrl(item.poster_path)" loading="lazy">
                             <div class="rating-badge"><i class="fas fa-star text-warning"></i> {{
                                 item.vote_average.toFixed(1) }}</div>
                         </div>
@@ -122,7 +122,7 @@
                 <div class="hot-row" data-section="tv">
                     <div class="hot-card" v-for="item in tvList" :key="item.id" @click="autoSearch(item.name)">
                         <div class="poster-wrap">
-                            <img :src="'https://daili.smdhb.com/t/p/w300' + item.poster_path" loading="lazy">
+                            <img :src="getPosterUrl(item.poster_path)" loading="lazy">
                             <div class="rating-badge"><i class="fas fa-star text-warning"></i> {{
                                 item.vote_average.toFixed(1) }}</div>
                         </div>
@@ -290,8 +290,19 @@
 
         // API地址修改为你的反代
         const TMDB_BASE_URL = `${MY_PROXY}/3`;
-        const TMDB_IMG_URL = `${MY_PROXY}/t/p/w500`;
-        const TMDB_BACKDROP_URL = `${MY_PROXY}/t/p/original`;
+        // 图片也走 API 代理 (需要 TMDB Proxy 支持 /t/p/...) 
+        // 实际上 TMDB 图片在 /t/p/...，我们的代理是 /api/tmdb -> api.themoviedb.org
+        // TMDB 图片域名是 image.tmdb.org，所以我们需要微调一下代理或者直接用 tmdb 代理
+        // 简单起见，我们假设 /api/tmdb 能代理 image.tmdb.org (其实不太行，域名不一样)
+        // 修正方案：增加一个专用图片常量，指向 public/index.html 里写的 "/api/proxy-img?url=" + 完整TMDB图片地址
+        // 或者更简单：直接用 image.tmdb.org 的官方图，因为 cloudflare 自身网络是通的？不，用户在墙内
+        // 最稳妥：用 /api/proxy-img 代理 image.tmdb.org
+        const TMDB_IMG_URL_BASE = "https://image.tmdb.org/t/p/w500";
+        const TMDB_BACKDROP_URL_BASE = "https://image.tmdb.org/t/p/original";
+
+        // 最终的图片获取方法 (通过我们的万能代理)
+        const TMDB_IMG_URL = `${window.location.origin}/api/proxy-img?url=${TMDB_IMG_URL_BASE}`;
+        const TMDB_BACKDROP_URL = `${window.location.origin}/api/proxy-img?url=${TMDB_BACKDROP_URL_BASE}`;
 
         let dp = null;
 
@@ -517,15 +528,39 @@
                                 this.heroList = data.results.filter(i => i.backdrop_path).slice(0, 5).map(item => ({
                                     title: item.title || item.name,
                                     overview: item.overview || '精彩内容不容错过',
-                                    backdrop: `${TMDB_BACKDROP_URL}${item.backdrop_path}`
+                                    backdrop: `/api/proxy-img?url=${encodeURIComponent('https://image.tmdb.org/t/p/original' + item.backdrop_path)}`
                                 }));
                             }
                         });
                 },
 
+                getPosterUrl(path) {
+                    if (!path) return '';
+                    // 拼接完整 TMDB 图片地址，然后传给代理
+                    const fullUrl = `https://image.tmdb.org/t/p/w300${path}`;
+                    return `/api/proxy-img?url=${encodeURIComponent(fullUrl)}`;
+                },
+
                 finalPoster(item, isHot = false) {
                     const name = isHot ? item.vod_name : item.name;
-                    return this.imageMap[name] || (isHot ? item.vod_pic : item.pic);
+                    // 1. 优先使用缓存的 TMDB 图
+                    if (this.imageMap[name]) return this.imageMap[name];
+
+                    // 2. 获取原始图片地址
+                    let url = isHot ? item.vod_pic : item.pic;
+
+                    // 3. 如果是 mac_default 或 nopic，尝试用 TMDB 补全
+                    if (!url || url.includes('mac_default') || url.includes('nopic')) {
+                        this.handleImgError(name);
+                        return ''; // 先给个空的，等 handleImgError 回调更新 imageMap
+                    }
+
+                    // 4. ★★★ 关键修改：如果图片是 http 开头，或者是第三方图床，走我们的图片代理
+                    if (url.startsWith('http')) {
+                        return `/api/proxy-img?url=${encodeURIComponent(url)}`;
+                    }
+
+                    return url;
                 },
                 isFallback(name) { return this.fallbackMap[name] === true; },
 

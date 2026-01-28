@@ -254,4 +254,28 @@ app.get('/admin/reset_defaults', async (c) => {
     });
 });
 
+// === Generic Image Proxy (For search results / non-TMDB images) ===
+app.get('/proxy-img', async (c) => {
+    const url = c.req.query('url');
+    if (!url) return c.text("Missing url", 400);
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                // 伪装成普通浏览器
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                // 移除 Referer 防止防盗链
+                'Referer': ''
+            }
+        });
+
+        const newResponse = new Response(response.body, response);
+        newResponse.headers.set('Access-Control-Allow-Origin', '*');
+        return newResponse;
+    } catch (e) {
+        // 返回一个透明像素或占位图，或者 404
+        return c.text("Proxy Error", 502);
+    }
+});
+
 export const onRequest = handle(app);
