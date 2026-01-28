@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- 核心：不发送 Referrer -->
     <meta name="referrer" content="no-referrer">
-    
+
     <!-- 网站描述和关键词 -->
     <title>冬瓜TV - 私人影视聚合平台 | 打造你的专属Netflix</title>
     <meta name="description" content="冬瓜TV - 打造你的私人Netflix！聚合30+影视站点，提供智能搜索、实时测速、全网资源聚合。支持电影、电视剧、动漫、综艺等海量内容，极速播放体验。">
@@ -87,8 +87,10 @@
                     <div class="section-line"></div>
                     <div class="section-title"><i class="fas fa-film"></i> 全球震感·电影榜</div>
                     <div class="hot-row-nav">
-                        <button class="nav-btn nav-prev" @click="scrollHotRow('movie', 'prev')"><i class="fas fa-chevron-left"></i></button>
-                        <button class="nav-btn nav-next" @click="scrollHotRow('movie', 'next')"><i class="fas fa-chevron-right"></i></button>
+                        <button class="nav-btn nav-prev" @click="scrollHotRow('movie', 'prev')"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <button class="nav-btn nav-next" @click="scrollHotRow('movie', 'next')"><i
+                                class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
                 <div class="hot-row" data-section="movie">
@@ -110,8 +112,10 @@
                     <div class="section-line"></div>
                     <div class="section-title"><i class="fas fa-tv"></i> 全球必追·剧集榜</div>
                     <div class="hot-row-nav">
-                        <button class="nav-btn nav-prev" @click="scrollHotRow('tv', 'prev')"><i class="fas fa-chevron-left"></i></button>
-                        <button class="nav-btn nav-next" @click="scrollHotRow('tv', 'next')"><i class="fas fa-chevron-right"></i></button>
+                        <button class="nav-btn nav-prev" @click="scrollHotRow('tv', 'prev')"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <button class="nav-btn nav-next" @click="scrollHotRow('tv', 'next')"><i
+                                class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
                 <div class="hot-row" data-section="tv">
@@ -133,8 +137,10 @@
                     <div class="section-line"></div>
                     <div class="section-title"><i class="fas fa-dragon"></i> 华语强档·国产剧</div>
                     <div class="hot-row-nav">
-                        <button class="nav-btn nav-prev" @click="scrollHotRow('cn', 'prev')"><i class="fas fa-chevron-left"></i></button>
-                        <button class="nav-btn nav-next" @click="scrollHotRow('cn', 'next')"><i class="fas fa-chevron-right"></i></button>
+                        <button class="nav-btn nav-prev" @click="scrollHotRow('cn', 'prev')"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <button class="nav-btn nav-next" @click="scrollHotRow('cn', 'next')"><i
+                                class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
                 <div class="hot-row" data-section="cn">
@@ -156,8 +162,10 @@
                     <div class="section-line"></div>
                     <div class="section-title"><i class="fas fa-mask"></i> 日韩潮流·剧集/动漫</div>
                     <div class="hot-row-nav">
-                        <button class="nav-btn nav-prev" @click="scrollHotRow('krjp', 'prev')"><i class="fas fa-chevron-left"></i></button>
-                        <button class="nav-btn nav-next" @click="scrollHotRow('krjp', 'next')"><i class="fas fa-chevron-right"></i></button>
+                        <button class="nav-btn nav-prev" @click="scrollHotRow('krjp', 'prev')"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <button class="nav-btn nav-next" @click="scrollHotRow('krjp', 'next')"><i
+                                class="fas fa-chevron-right"></i></button>
                     </div>
                 </div>
                 <div class="hot-row" data-section="krjp">
@@ -276,8 +284,8 @@
     <script>
         const { createApp, reactive } = Vue;
         // 使用你的反代域名
-        const MY_PROXY = "https://daili.smdhb.com";
-        const TMDB_API_KEY = "3056754f5a50bf5171f9d411e3029fb3"; 
+        const MY_PROXY = "https://proxy.686423.xyz";
+        const TMDB_API_KEY = "3056754f5a50bf5171f9d411e3029fb3";
 
         // API地址修改为你的反代
         const TMDB_BASE_URL = `${MY_PROXY}/3`;
@@ -289,7 +297,7 @@
         // 添加触摸滑动支持函数
         function initHotRowSwipe() {
             const hotRows = document.querySelectorAll('.hot-row');
-            
+
             hotRows.forEach(row => {
                 let isDown = false;
                 let startX;
@@ -299,7 +307,7 @@
                 let lastTime = 0;
                 let startY = 0;
                 let isScrolling = false;
-                
+
                 row.addEventListener('mousedown', (e) => {
                     isDown = true;
                     startX = e.pageX - row.offsetLeft;
@@ -311,20 +319,20 @@
                     row.style.scrollSnapType = 'none';
                     row.classList.add('grabbing');
                 });
-                
+
                 row.addEventListener('mouseleave', () => {
                     isDown = false;
                     row.style.cursor = 'grab';
                     row.style.scrollSnapType = 'x mandatory';
                     row.classList.remove('grabbing');
                 });
-                
+
                 row.addEventListener('mouseup', () => {
                     isDown = false;
                     row.style.cursor = 'grab';
                     row.style.scrollSnapType = 'x mandatory';
                     row.classList.remove('grabbing');
-                    
+
                     // 添加惯性滚动
                     if (Math.abs(velocity) > 0.5) {
                         const inertiaScroll = () => {
@@ -337,14 +345,14 @@
                         requestAnimationFrame(inertiaScroll);
                     }
                 });
-                
+
                 row.addEventListener('mousemove', (e) => {
                     if (!isDown) return;
                     e.preventDefault();
                     const x = e.pageX - row.offsetLeft;
                     const walk = (x - startX) * 2; // 滚动速度倍数
                     row.scrollLeft = scrollLeft - walk;
-                    
+
                     // 计算速度
                     const currentTime = Date.now();
                     const timeDiff = currentTime - lastTime;
@@ -354,7 +362,7 @@
                     lastX = e.pageX;
                     lastTime = currentTime;
                 });
-                
+
                 // 触摸事件支持 - 改进版
                 row.addEventListener('touchstart', (e) => {
                     isDown = true;
@@ -367,28 +375,28 @@
                     velocity = 0;
                     row.style.scrollSnapType = 'none';
                 });
-                
+
                 row.addEventListener('touchmove', (e) => {
                     if (!isDown) return;
-                    
+
                     const currentX = e.touches[0].pageX;
                     const currentY = e.touches[0].pageY;
                     const deltaX = Math.abs(currentX - startX);
                     const deltaY = Math.abs(currentY - startY);
-                    
+
                     // 如果垂直移动大于水平移动，则允许页面滚动
                     if (deltaY > deltaX && deltaY > 10) {
                         isScrolling = true;
                         return;
                     }
-                    
+
                     if (isScrolling) return;
-                    
+
                     e.preventDefault();
                     const x = currentX - row.offsetLeft;
                     const walk = (x - startX) * 2;
                     row.scrollLeft = scrollLeft - walk;
-                    
+
                     const currentTime = Date.now();
                     const timeDiff = currentTime - lastTime;
                     if (timeDiff > 0) {
@@ -397,12 +405,12 @@
                     lastX = currentX;
                     lastTime = currentTime;
                 });
-                
+
                 row.addEventListener('touchend', () => {
                     if (!isDown) return;
                     isDown = false;
                     row.style.scrollSnapType = 'x mandatory';
-                    
+
                     if (!isScrolling && Math.abs(velocity) > 0.5) {
                         const inertiaScroll = () => {
                             if (Math.abs(velocity) > 0.1) {
@@ -415,7 +423,7 @@
                     }
                     isScrolling = false;
                 });
-                
+
                 // 设置初始样式
                 row.style.cursor = 'grab';
                 row.style.scrollSnapType = 'x mandatory';
@@ -438,7 +446,7 @@
                 window.addEventListener('scroll', () => { this.scrollY = window.scrollY; });
                 this.fetchHero();
                 this.fetchAllLists();
-                
+
                 // 初始化热榜滑动功能
                 this.$nextTick(() => {
                     initHotRowSwipe();
@@ -588,15 +596,15 @@
                     else dp.switchVideo({ url: url, type: 'hls' });
                     dp.play();
                 },
-                
+
                 // 热榜左右滚动功能
                 scrollHotRow(section, direction) {
                     const hotRow = document.querySelector(`[data-section="${section}"]`);
                     if (!hotRow) return;
-                    
+
                     const cardWidth = 164; // 150px width + 14px gap
                     const scrollAmount = cardWidth * 3; // 一次滚动3个项目
-                    
+
                     if (direction === 'prev') {
                         hotRow.scrollBy({
                             left: -scrollAmount,
@@ -608,25 +616,25 @@
                             behavior: 'smooth'
                         });
                     }
-                    
+
                     // 更新导航按钮状态
                     this.updateNavButtons(hotRow, section);
                 },
-                
+
                 updateNavButtons(hotRow, section) {
                     const prevBtn = document.querySelector(`[data-section="${section}"]`).parentElement.querySelector('.nav-prev');
                     const nextBtn = document.querySelector(`[data-section="${section}"]`).parentElement.querySelector('.nav-next');
-                    
+
                     if (prevBtn && nextBtn) {
                         // 检查是否可以向前滚动
                         prevBtn.disabled = hotRow.scrollLeft <= 0;
-                        
+
                         // 检查是否可以向后滚动
                         const maxScroll = hotRow.scrollWidth - hotRow.clientWidth;
                         nextBtn.disabled = hotRow.scrollLeft >= maxScroll - 10; // 10px 容差
                     }
                 },
-                
+
                 // 初始化所有热榜导航按钮状态
                 initHotRowNavStates() {
                     const sections = ['movie', 'tv', 'cn', 'krjp'];
@@ -637,10 +645,10 @@
                             hotRow.addEventListener('scroll', () => {
                                 this.updateNavButtons(hotRow, section);
                             });
-                            
+
                             // 初始状态
                             this.updateNavButtons(hotRow, section);
-                            
+
                             // 窗口大小改变时重新计算
                             window.addEventListener('resize', () => {
                                 this.updateNavButtons(hotRow, section);
