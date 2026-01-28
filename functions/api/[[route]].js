@@ -266,11 +266,18 @@ app.get('/proxy-img', async (c) => {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 // 移除 Referer 防止防盗链
                 'Referer': ''
+            },
+            // Cloudflare 缓存优化 (参考了您提供的脚本)
+            cf: {
+                cacheTtl: 86400, // 缓存 1 天
+                cacheEverything: true
             }
         });
 
         const newResponse = new Response(response.body, response);
         newResponse.headers.set('Access-Control-Allow-Origin', '*');
+        // 强制浏览器和 CDN 缓存图片
+        newResponse.headers.set('Cache-Control', 'public, max-age=86400');
         return newResponse;
     } catch (e) {
         // 返回一个透明像素或占位图，或者 404
