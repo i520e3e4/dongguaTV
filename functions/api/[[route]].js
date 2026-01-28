@@ -140,52 +140,54 @@ app.get('/detail', async (c) => {
     } catch (e) {
         return c.json({ error: "Source Error" }, 500);
     }
-    // === TMDB Proxy ===
-    app.all('/tmdb/*', async (c) => {
-        // 原始请求路径: /api/tmdb/3/trending/movie/week?api_key=...
-        // 目标路径: https://api.themoviedb.org/3/trending/movie/week?api_key=...
-        const url = new URL(c.req.url);
-        const path = url.pathname.replace('/api/tmdb', '');
-        const query = url.search;
+});
 
-        const targetUrl = `https://api.themoviedb.org${path}${query}`;
+// === TMDB Proxy ===
+app.all('/tmdb/*', async (c) => {
+    // 原始请求路径: /api/tmdb/3/trending/movie/week?api_key=...
+    // 目标路径: https://api.themoviedb.org/3/trending/movie/week?api_key=...
+    const url = new URL(c.req.url);
+    const path = url.pathname.replace('/api/tmdb', '');
+    const query = url.search;
 
-        try {
-            const response = await fetch(targetUrl, {
-                method: c.req.method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    // 转发必要头，但移除 Host 以免被 TMDB 拒绝
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
-            });
+    const targetUrl = `https://api.themoviedb.org${path}${query}`;
 
-            // 克隆响应并重新设置 CORS 头
-            const newResponse = new Response(response.body, response);
-            newResponse.headers.set('Access-Control-Allow-Origin', '*');
-            return newResponse;
-        } catch (e) {
-            return c.json({ error: "Failed to fetch from TMDB" }, 502);
-        }
-    });
+    try {
+        const response = await fetch(targetUrl, {
+            method: c.req.method,
+            headers: {
+                'Content-Type': 'application/json',
+                // 转发必要头，但移除 Host 以免被 TMDB 拒绝
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
 
-    // === Admin APIs ===
-    app.post('/admin/login', async (c) => {
-        const body = await c.req.json();
-        return body.password === ADMIN_PASSWORD
-            ? c.json({ success: true })
-            : c.json({ success: false }, 403);
-    });
+        // 克隆响应并重新设置 CORS 头
+        const newResponse = new Response(response.body, response);
+        newResponse.headers.set('Access-Control-Allow-Origin', '*');
+        return newResponse;
+    } catch (e) {
+        return c.json({ error: "Failed to fetch from TMDB" }, 502);
+    }
+});
 
-    app.get('/admin/sites', async (c) => {
-        const db = await getDB(c.env);
-        return c.json(db.sites);
-    });
+// === Admin APIs ===
+app.post('/admin/login', async (c) => {
+    const body = await c.req.json();
+    return body.password === ADMIN_PASSWORD
+        ? c.json({ success: true })
+        : c.json({ success: false }, 403);
+});
 
-    app.post('/admin/sites', async (c) => {
-        const body = await c.req.json();
-        await saveDB(c.env, { sites: body.sites });
-        return c.json({ success: true });
-    });
+app.get('/admin/sites', async (c) => {
+    const db = await getDB(c.env);
+    return c.json(db.sites);
+});
 
-    export const onRequest = handle(app);
+app.post('/admin/sites', async (c) => {
+    const body = await c.req.json();
+    await saveDB(c.env, { sites: body.sites });
+    return c.json({ success: true });
+});
+
+export const onRequest = handle(app);
