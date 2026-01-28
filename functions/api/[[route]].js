@@ -16,8 +16,12 @@ const DEFAULT_SITES = [
 // Middleware
 app.use('/*', cors());
 
-// Helper: Get DB from KV
 async function getDB(env) {
+    // 增加：安全检查，防止未绑定 KV 时直接报错崩溃
+    if (!env || !env.VIDEO_PROXY_DB) {
+        console.error("KV Binding 'VIDEO_PROXY_DB' missing!");
+        return { sites: DEFAULT_SITES };
+    }
     try {
         const data = await env.VIDEO_PROXY_DB.get('sites', { type: 'json' });
         if (!data || !Array.isArray(data)) {
