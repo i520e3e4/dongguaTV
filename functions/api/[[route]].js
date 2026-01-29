@@ -257,22 +257,27 @@ app.get('/admin/reset_defaults', async (c) => {
 // === Tesla Fullscreen Redirect ===
 app.get('/fullscreen', async (c) => {
     // 默认跳转回当前域名，也可以支持 ?url= 参数
-    const target = c.req.query('url') || c.req.header('referer') || 'https://www.google.com';
-    // 构造三级跳转链
-    // 1. v.qq.com -> 1905.com
-    // 2. 1905.com -> target + ?www.1905.com (bypass regex)
-    // 注意：需要分别对每层 URL 进行编码
+    let target = c.req.query('url') || c.req.header('referer') || 'https://www.google.com';
 
-    // 第三级：目标 URL + 绕过后缀
-    // 如果目标已有 query string，用 & 连接，否则用 ?
-    const step3_raw = target + (target.includes('?') ? '&' : '?') + 'www.1905.com';
+    // ★关键修复★：1905.com 的漏洞利用要求 URL 中不能包含 "/" (除了 http:// 后的那两个)
+    // 所以必须强制使用 Origin (协议+域名+端口)，丢弃其他所有内容
+    try {
+        const urlObj = new URL(target);
+        target = urlObj.origin;
+        if (target.endsWith('/')) target = target.slice(0, -1);
+    } catch (e) {
+        // Fallback
+        target = target.split('?')[0].split('#')[0];
+        if (target.endsWith('/')) target = target.slice(0, -1);
+    }
+
+    // 构造三级跳转链: Origin + 绕过后缀
+    const step3_raw = target + '?www.1905.com';
     const step3_encoded = encodeURIComponent(step3_raw);
 
-    // 第二级：1905.com 跳转接口
     const step2_raw = `https://www.1905.com/api/redirec.html?redirect_url=${step3_encoded}`;
     const step2_encoded = encodeURIComponent(step2_raw);
 
-    // 第一级：腾讯视频跳转接口
     const final_url = `https://v.qq.com/search_redirect.html?url=${step2_encoded}`;
 
     return c.json({ url: final_url });
