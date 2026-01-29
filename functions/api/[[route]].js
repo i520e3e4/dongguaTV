@@ -254,7 +254,30 @@ app.get('/admin/reset_defaults', async (c) => {
     });
 });
 
-// === Generic Image Proxy (For search results / non-TMDB images) ===
+// === Tesla Fullscreen Redirect ===
+app.get('/fullscreen', async (c) => {
+    // 默认跳转回当前域名，也可以支持 ?url= 参数
+    const target = c.req.query('url') || c.req.header('referer') || 'https://www.google.com';
+    // 构造三级跳转链
+    // 1. v.qq.com -> 1905.com
+    // 2. 1905.com -> target + ?www.1905.com (bypass regex)
+    // 注意：需要分别对每层 URL 进行编码
+
+    // 第三级：目标 URL + 绕过后缀
+    // 如果目标已有 query string，用 & 连接，否则用 ?
+    const step3_raw = target + (target.includes('?') ? '&' : '?') + 'www.1905.com';
+    const step3_encoded = encodeURIComponent(step3_raw);
+
+    // 第二级：1905.com 跳转接口
+    const step2_raw = `https://www.1905.com/api/redirec.html?redirect_url=${step3_encoded}`;
+    const step2_encoded = encodeURIComponent(step2_raw);
+
+    // 第一级：腾讯视频跳转接口
+    const final_url = `https://v.qq.com/search_redirect.html?url=${step2_encoded}`;
+
+    return c.json({ url: final_url });
+});
+
 app.get('/proxy-img', async (c) => {
     const url = c.req.query('url');
     if (!url) return c.text("Missing url", 400);
